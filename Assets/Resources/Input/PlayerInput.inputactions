@@ -22,10 +22,18 @@
                     "interactions": ""
                 },
                 {
-                    "name": "Camera",
+                    "name": "CameraRotation",
                     "type": "Value",
                     "id": "1dee1fee-bfb6-4ec0-bd19-0cd07cdb025a",
                     "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "Jump",
+                    "type": "Button",
+                    "id": "030a0557-7d75-44fb-931a-c29912c4bb33",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 }
@@ -104,7 +112,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard and mouse",
-                    "action": "Camera",
+                    "action": "CameraRotation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9634fc91-90cf-47b7-bf31-3ca98e851629",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard and mouse",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

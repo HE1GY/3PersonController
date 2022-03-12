@@ -1,23 +1,32 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class PlayerMovement
 {
+    public event Action Grounded;
+    
     private const float Acceleration = 0.05f;
     private const float Deceleration = 0.05f;
     private const float TurnSpeed =10;
-    private const float Gravity =9.8f;
-    
+    private const float Gravity =-9.8f;
+    private const float ShpereGroundCheckRadius= 0.1f;
+    private const int GroundedGravity=-4;
+
     private readonly CharacterController _characterController;
     private readonly PlayerInput _input;
     private readonly Transform _camTransform;
+    private readonly LayerMask _groundLayerMask;
 
-    private float _runSpeed;
-    private float _walkSpeed;
+    private readonly float _runSpeed;
+    private readonly float _walkSpeed;
+    private readonly float _jumpHeight;
+    
     private float _currentSpeed;
-    private float _turnSmothVelocity;
-    private float _gravityVelocity=0;
+    private float _verticalVelocity;
 
     private float _horizontalInput;
     private float _verticalInput;
@@ -26,61 +35,55 @@ public class PlayerMovement
 
     private bool _isRunPress;
     private bool  _isWalkPress;
+    private bool  _isJumpPress;
 
-    public PlayerMovement(CharacterController characterController, PlayerInput input,float walkSpeed,float runSpeed, Transform camTransform)
+
+    public PlayerMovement(CharacterController characterController, PlayerInput input,MoveValueSetup moveValueSetup, Transform camTransform,LayerMask groundLayerMask)
     {
         _characterController= characterController;
         _input = input;
-        _walkSpeed = walkSpeed;
-        _runSpeed = runSpeed;
+        _walkSpeed = moveValueSetup.WalkSpeed;
+        _runSpeed = moveValueSetup.RunSpeed;
+        _jumpHeight = moveValueSetup.JumpHeight;
         _camTransform = camTransform;
+        _groundLayerMask = groundLayerMask;
 
         _input.Player.Walk.performed += OnInputDirection;
         _input.Player.Walk.canceled += _=>_isWalkPress=false ;
 
         _input.Player.Run.started += OnInputRun;
         _input.Player.Run.canceled += OnInputRun;
+
+        _input.Player.Jump.started += OnInputJump;
+        _input.Player.Jump.canceled += OnInputJump;
     }
 
-    
-    private void OnInputDirection(InputAction.CallbackContext ctx)
-    {
-        Vector2 inputVector = ctx.ReadValue<Vector2>();
-        _isWalkPress = inputVector.x!=0||inputVector.y!=0;
-        _horizontalInput = inputVector.x;
-        _verticalInput = inputVector.y;
-    }
 
-    
-    private void OnInputRun(InputAction.CallbackContext ctx) => _isRunPress = ctx.ReadValueAsButton();
-
-
-    public void HandleMove()
+    public void HandleHorizontalMove()
     {
         _moveDirection = GetMoveDirection();
+            if (_isWalkPress && _currentSpeed <=_walkSpeed)
+            {
+                _currentSpeed += Acceleration;
+                _currentSpeed=RoundValue(_currentSpeed, _walkSpeed, true);
+            }
+            else if(!_isWalkPress&&_currentSpeed>0)
+            {
+                _currentSpeed -= Deceleration;
+                _currentSpeed=RoundValue(_currentSpeed, 0, false);
+            }
         
-        if (_isWalkPress && _currentSpeed <=_walkSpeed)
-        {
-            _currentSpeed += Acceleration;
-            _currentSpeed=RoundValue(_currentSpeed, _walkSpeed, true);
-        }
-        else if(!_isWalkPress&&_currentSpeed>0)
-        {
-            _currentSpeed -= Deceleration;
-            _currentSpeed=RoundValue(_currentSpeed, 0, false);
-        }
-        
-        if (_isRunPress &&_isWalkPress&& _currentSpeed <=_runSpeed&&_currentSpeed>=_walkSpeed)
-        {
-            _currentSpeed += Acceleration;
-            _currentSpeed=RoundValue(_currentSpeed, _runSpeed, true);
-        }
-        else if(!_isRunPress&& _currentSpeed>_walkSpeed)
-        {
-            _currentSpeed -= Deceleration;
-            _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
-        }
-        _characterController.Move(_moveDirection * _currentSpeed * Time.deltaTime);
+            if (_isRunPress &&_isWalkPress&& _currentSpeed <=_runSpeed&&_currentSpeed>=_walkSpeed)
+            {
+                _currentSpeed += Acceleration;
+                _currentSpeed=RoundValue(_currentSpeed, _runSpeed, true);
+            }
+            else if(!_isRunPress&& _currentSpeed>_walkSpeed)
+            {
+                _currentSpeed -= Deceleration;
+                _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
+            }
+            _characterController.Move(_moveDirection * _currentSpeed * Time.deltaTime);
     }
 
     public void HandleRotation()
@@ -94,26 +97,57 @@ public class PlayerMovement
         }
     }
 
-    public void HandleGravity()
+    public void HandleVerticalMove()
     {
-        /*if (Physics.CheckSphere(_characterController.transform.position, 0.4f,6))
+        bool isGrounded = Physics.CheckSphere(_characterController.transform.position, ShpereGroundCheckRadius, _groundLayerMask);
+        HandleGravity(isGrounded);
+        if (isGrounded)
         {
-            Debug.Log("Land");
+            Jump();
         }
-        else
-        {
-            Debug.Log("Falling");
-        }*/
-        
-        
-        /*_characterController.Move(-_gravityVelocity * Vector3.up * Time.deltaTime);*/
+        _characterController.Move(Vector3.up * _verticalVelocity * Time.deltaTime);
     }
-    
-    
-    
-    public float GetNormalizedVelocity() => _currentSpeed / _runSpeed;
+
+    public float GetNormalizedHorizontalVelocity() => _currentSpeed / _runSpeed;
+    public float GetVerticalVelocity() => _verticalVelocity;
+
+    private void OnInputJump(InputAction.CallbackContext ctx)
+    {
+        _isJumpPress = ctx.ReadValueAsButton();
+    }
+
+    private void Jump()
+    {
+        if (_isJumpPress)
+        {
+            float jumpVelocity = Mathf.Sqrt(_jumpHeight * -2 * Gravity);
+            _verticalVelocity = jumpVelocity;
+        }
+    }
 
 
+    private void HandleGravity(bool isGrounded)
+    {
+        if (!isGrounded)
+        {
+            _verticalVelocity += Gravity * Time.deltaTime;
+        }
+        else if (_verticalVelocity < GroundedGravity) 
+        {
+            Debug.Log("Landed");
+            Grounded?.Invoke();
+            _verticalVelocity = GroundedGravity;
+        }
+    }
+
+    private void OnInputDirection(InputAction.CallbackContext ctx)
+    {
+        Vector2 inputVector = ctx.ReadValue<Vector2>();
+        _isWalkPress = inputVector.x!=0||inputVector.y!=0;
+        _horizontalInput = inputVector.x;
+        _verticalInput = inputVector.y;
+    }
+    private void OnInputRun(InputAction.CallbackContext ctx) => _isRunPress = ctx.ReadValueAsButton();
     private Vector3 GetMoveDirection()
     {
         Vector3 direction = _verticalInput * _camTransform.forward;

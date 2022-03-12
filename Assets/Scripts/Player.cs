@@ -2,9 +2,14 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [Header("MoveSetup")]
     [SerializeField] private float _walkSpeed;
     [SerializeField] private float _runSpeed;
+    [SerializeField] private float _jumpHeight;
     [SerializeField] private Transform _camTransform;
+    
+    [Header("Gravity")]
+    [SerializeField] private LayerMask _groundMask;
     
     private Animator _animator;
     private CharacterController _characterController;
@@ -19,12 +24,16 @@ public class Player : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         _animator = GetComponent<Animator>();
         _characterController = GetComponent<CharacterController>();
+
+        MoveValueSetup moveValueSetup = new MoveValueSetup(_walkSpeed, _runSpeed, _jumpHeight);
         
         _playerInput = new PlayerInput();
+        _playerMovement = new PlayerMovement(_characterController,_playerInput,moveValueSetup,_camTransform,_groundMask);
         _playerAnimation = new PlayerAnimation(_animator);
-        _playerMovement = new PlayerMovement(_characterController,_playerInput,_walkSpeed,_runSpeed,_camTransform);
-
+        
+        _playerMovement.Grounded += _playerAnimation.SetLandedTrigger; 
     }
+    
     private void OnEnable()
     {
         _playerInput.Enable();
@@ -37,9 +46,10 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        _playerMovement.HandleMove();
+        _playerMovement.HandleHorizontalMove();
         _playerMovement.HandleRotation();
-        _playerMovement.HandleGravity();
-        _playerAnimation.SetVelocity(_playerMovement.GetNormalizedVelocity());
+        _playerMovement.HandleVerticalMove();
+        _playerAnimation.SetHorizontalVelocity(_playerMovement.GetNormalizedHorizontalVelocity());
+        _playerAnimation.SetVerticallVelocity(_playerMovement.GetVerticalVelocity());
     }
 }
