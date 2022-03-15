@@ -13,7 +13,7 @@ namespace PlayerScripts
 
         private const float Acceleration = 0.05f;
         private const float Deceleration = 0.03f;
-        private const float TurnSpeed = 10;
+        private const float TurnSpeed = 5;
         private const float Gravity = -9.8f;
         private const float SphereGroundCheckRadius = 0.2f;
         private const int GroundedGravity = -4;
@@ -37,7 +37,6 @@ namespace PlayerScripts
 
         private bool _isRunPress;
         private bool _isWalkPress;
-        private bool _isJumpPress;
         private bool _isGrounded;
 
 
@@ -58,8 +57,7 @@ namespace PlayerScripts
             _input.Player.Run.started += OnInputRun;
             _input.Player.Run.canceled += OnInputRun;
 
-            _input.Player.Jump.started += OnInputJump;
-            _input.Player.Jump.canceled += OnInputJump;
+            _input.Player.Jump.performed += ctx => Jump();
         }
 
 
@@ -108,11 +106,6 @@ namespace PlayerScripts
             var position = _characterController.transform.position;
             bool isGrounded = Physics.CheckSphere(position, SphereGroundCheckRadius, _groundLayerMask);
             HandleGravity(isGrounded);
-            if (isGrounded)
-            {
-                Jump();
-            }
-
             _characterController.Move(Vector3.up * _verticalVelocity * Time.deltaTime);
         }
 
@@ -120,15 +113,11 @@ namespace PlayerScripts
         public float GetVerticalVelocity() => _verticalVelocity;
 
         public float GetVelocity() => _currentSpeed;
-
-        private void OnInputJump(InputAction.CallbackContext ctx)
-        {
-            _isJumpPress = ctx.ReadValueAsButton();
-        }
+        
 
         private void Jump()
         {
-            if (_isJumpPress)
+            if (_isGrounded)
             {
                 float jumpVelocity = Mathf.Sqrt(_jumpHeight * -2 * Gravity);
                 _verticalVelocity = jumpVelocity;

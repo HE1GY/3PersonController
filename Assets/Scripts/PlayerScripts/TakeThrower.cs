@@ -6,22 +6,26 @@ namespace PlayerScripts
     public class TakeThrower
     {
         public event Action<bool> CanTake;
+        public event Action<Vector3> Take;
+        public event Action Throw;
         
         private readonly Transform _placeHolder;
         private readonly Transform _camTransform;
         private readonly LayerMask _mask;
         private readonly PlayerInput _input;
         private readonly float _throwForce;
+        private readonly float _takeDistance;
 
         private Item _item;
-        
-        public TakeThrower(Transform placeHolder,Transform camTransform,LayerMask mask,PlayerInput input,float throwForce)
+
+        public TakeThrower(Transform placeHolder,Transform camTransform,LayerMask mask,PlayerInput input,float throwForce,float takeDistance)
         {
             _placeHolder = placeHolder;
             _camTransform = camTransform;
             _mask = mask;
             _input = input;
             _throwForce = throwForce;
+            _takeDistance = takeDistance;
 
             _input.Player.TakeItem.performed += _ =>
             {
@@ -30,15 +34,31 @@ namespace PlayerScripts
 
             _input.Player.ThrowItem.performed += _ =>
             {
-                _item?.ThrowMe(_throwForce,_camTransform.forward);
+                if (_item != null)
+                {
+                    Throw?.Invoke();
+                }
             };
 
             _input.Player.CameraRotation.performed += _ =>
             {
-                CanTake?.Invoke(TryTake(out Item item));
+                bool canTake = TryTake(out Item item);                
+                CanTake?.Invoke(canTake);
             };
 
         }
+
+        public void FinallyTake()
+        {
+            _item.TakeMe(_placeHolder);
+        }
+
+        public void FinallyThrow()
+        {
+            _item.ThrowMe(_throwForce,_camTransform.forward);
+            _item = null;
+        }
+        
 
         private bool TryTake(out Item item)
         {
@@ -47,16 +67,17 @@ namespace PlayerScripts
             Vector3 rayDirection = _camTransform.forward;
             ray=new Ray(rayOrigin,rayDirection);
             
-            Debug.DrawRay(rayOrigin,rayDirection,Color.red,100);
-            
             if (Physics.Raycast(ray,out RaycastHit hit,100,_mask))
             {
-                if (hit.collider.gameObject.TryGetComponent<Item>(out Item item1))
+                float distanceToItem = Vector3.Distance(_placeHolder.position, hit.point);
+                if (distanceToItem <= _takeDistance)
                 {
-                    item = item1;
-                    return true;
-                } 
-                
+                    if (hit.collider.gameObject.TryGetComponent<Item>(out Item item1))
+                    {
+                        item = item1;
+                        return true;
+                    } 
+                }
             }
             item = null;
             return false;
@@ -66,10 +87,12 @@ namespace PlayerScripts
         {
             if (TryTake(out Item item))
             {
-                item.TakeMe(_placeHolder);
-                _item = item;
+                if (_item == null)
+                {
+                    _item = item;
+                    Take?.Invoke(item.transform.position);
+                }
             }
         }
-        
     }
 }
