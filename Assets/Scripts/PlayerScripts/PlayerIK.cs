@@ -8,10 +8,11 @@ namespace PlayerScripts
     public class PlayerIK
     {
         private const string _armRigName="ArmRig";
-        
+
         private RigBuilder _rigBuilder;
         private Transform _armTarget;
         private RigLayer _armRig;
+
 
         public PlayerIK(RigBuilder rigBuilder, Transform armTarget)
         {
@@ -29,7 +30,6 @@ namespace PlayerScripts
         {
             _armRig.active = false;
         }
-
         public void TakingIKAnimation(Vector3 targetPosition)
         {
             _armTarget.position = targetPosition;

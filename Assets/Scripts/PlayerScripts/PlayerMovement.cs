@@ -12,7 +12,7 @@ namespace PlayerScripts
         public event Action Grounded;
 
         private const float Acceleration = 0.05f;
-        private const float Deceleration = 0.03f;
+        private const float Deceleration = 0.05f;
         private const float TurnSpeed = 5;
         private const float Gravity = -9.8f;
         private const float SphereGroundCheckRadius = 0.2f;

@@ -104,8 +104,9 @@ namespace PlayerScripts
             _playerAnimation.PlayThrowing();
         }
         
+
         // Animation Methods
-        private void ToMakeSteps()
+        private void ToMakeStepsInWalkRunAnimation()
         {
             MakeStep?.Invoke();
         }
