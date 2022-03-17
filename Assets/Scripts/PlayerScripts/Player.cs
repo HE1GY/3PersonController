@@ -25,11 +25,11 @@ namespace PlayerScripts
 
         [Header("IK")]
         [SerializeField] private Transform _armTarget;
-    
+
         private Animator _animator;
         private CharacterController _characterController;
         private RigBuilder _rigBuilder;
-    
+
         private PlayerInput _playerInput;
         private PlayerAnimation _playerAnimation;
         private PlayerMovement _playerMovement;
@@ -96,7 +96,7 @@ namespace PlayerScripts
         {
             _playerAnimation.PlayTaking();
             _playerIK.SetActiveArmRig();
-            _playerIK.TakingIKAnimation(targetPos);
+            _playerIK.OnTakingIKAnimation(targetPos);
         }
 
         private void OnThrowing()
@@ -123,8 +123,8 @@ namespace PlayerScripts
 
         private void InTakeAnimation()
         {
-            _takeThrower.FinallyTake();
             _playerIK.SetUnActiveArmRig();
+            _takeThrower.FinallyTake();
         }
 
         private void InThrowAnimation()

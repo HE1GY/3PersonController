@@ -30,7 +30,7 @@ namespace PlayerScripts
         {
             _armRig.active = false;
         }
-        public void TakingIKAnimation(Vector3 targetPosition)
+        public void OnTakingIKAnimation(Vector3 targetPosition)
         {
             _armTarget.position = targetPosition;
         }
