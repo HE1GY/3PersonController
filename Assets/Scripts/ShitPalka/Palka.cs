@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -6,29 +5,50 @@ namespace ShitPalka
 {
     public class Palka : MonoBehaviour
     {
-        [Header("IK")]
-        [SerializeField] private Transform _hipRigTarget;
-        [SerializeField] private Transform _hipPivot;
+        [Header("Leg1")] 
+        [SerializeField] private Transform _ikTargetTransform1;
+        [SerializeField] private Transform _rayOrg1;
+        [SerializeField]private Animator _animator1;
         
-        [SerializeField] private Transform _leftLegRigTarget;
-        [SerializeField] private Transform _leftPivot;
+        [Header("Leg2")] 
+        [SerializeField] private Transform _ikTargetTransform2;
+        [SerializeField] private Transform _rayOrg2;
+        [SerializeField]private Animator _animator2;
         
-        [SerializeField] private Transform _rightLegRigTarget;
-        [SerializeField] private Transform _rightPivot;
+        [Header("Leg3")] 
+        [SerializeField] private Transform _ikTargetTransform3;
+        [SerializeField] private Transform _rayOrg3;
+        [SerializeField]private Animator _animator3;
+        
+        [Header("Leg4")] 
+        [SerializeField] private Transform _ikTargetTransform4;
+        [SerializeField] private Transform _rayOrg4;
+        [SerializeField]private Animator _animator4;
+        
+        private Leg _leg1;
+        private Leg _leg2;
+        private Leg _leg3;
+        private Leg _leg4;
         
         
-        private PalkaIK _palkaIK;
 
         private void Awake()
         {
-            _palkaIK = new PalkaIK(_hipRigTarget, _hipPivot,_leftLegRigTarget,_leftPivot,_rightLegRigTarget,_rightPivot);
+
+            _leg1 = new Leg(_ikTargetTransform1,_rayOrg1,_animator1);
+            _leg2 = new Leg(_ikTargetTransform2,_rayOrg2,_animator2);
+            _leg3 = new Leg(_ikTargetTransform3,_rayOrg3,_animator3);
+            _leg4 = new Leg(_ikTargetTransform4,_rayOrg4,_animator4);
+            
         }
+
 
         private void Update()
         {
-            /*_palkaIK.HandleHipStabilizatin();
-            _palkaIK.HandleLeftLegStabilization();
-            _palkaIK.HandleRightLegStabilization();*/
+            _leg1.HandleMovement();
+            _leg2.HandleMovement();
+            _leg3.HandleMovement();
+            _leg4.HandleMovement();
         }
     }
 }
