@@ -15,7 +15,11 @@ namespace ShitPalka
         public void PlayLegMove()
         {
             _animator.SetTrigger(_moveHash);
-            Debug.Log("Move");
+        }
+
+        public void TurnAnimator(bool on)
+        {
+            _animator.enabled = on;
         }
     }
 }

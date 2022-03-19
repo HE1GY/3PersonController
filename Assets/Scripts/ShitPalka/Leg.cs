@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Security.Cryptography;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace ShitPalka
 {
     public class Leg
     {
-
-        private const float _distanceToMove = 0.5f;
+        private  float _distanceToMove;
 
         private Transform _ikTargetTransform;
         private Vector3 _currentPos;
@@ -16,7 +16,7 @@ namespace ShitPalka
         private RayThrower _rayThrower;
         private LegAnimation _legAnimation;
 
-        private float _currentPoint=0;
+        private float _currentPointOnWay;
         private bool _stay=true;
         private Vector3 _targetPos;
         private Vector3 _startPos;
@@ -25,16 +25,12 @@ namespace ShitPalka
         public Leg(Transform ikTargetTransform,  Transform rayOrg,Animator animator)
         {
             _ikTargetTransform = ikTargetTransform;
-            _rayOrg = rayOrg;
+            _rayOrg = rayOrg; 
             _rayThrower = new RayThrower(_rayOrg);
             _currentPos=_rayThrower.GetHitPos();
             _legAnimation = new LegAnimation(animator);
-        }
 
-        private bool CheckIfMoveToPos(out Vector3 nextPos)
-        {
-            nextPos = _rayThrower.GetHitPos();
-            return Vector3.Distance(_ikTargetTransform.position, nextPos) > _distanceToMove;
+            _distanceToMove = Random.Range(0.5f, 0.9f);
         }
 
         public void HandleMovement()
@@ -53,14 +49,21 @@ namespace ShitPalka
             }
             else
             {
-                _ikTargetTransform.position = Vector3.Lerp(_startPos, _targetPos, _currentPoint);
-                _currentPoint += Time.deltaTime*3;
-                if (_currentPoint >= 1)
+                _ikTargetTransform.position = Vector3.Lerp(_startPos, _targetPos, _currentPointOnWay);
+                _currentPointOnWay += Time.deltaTime*3;
+                if (_currentPointOnWay >= 1)
                 {
-                    _currentPoint = 0;
+                    _currentPointOnWay = 0;
                     _stay = true;
                 }
             }
+        }
+        
+
+        private bool CheckIfMoveToPos(out Vector3 nextPos)
+        {
+            nextPos = _rayThrower.GetHitPos();
+            return Vector3.Distance(_ikTargetTransform.position, nextPos) > _distanceToMove;
         }
     }
 }
