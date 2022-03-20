@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 
-public class Item:MonoBehaviour
+public class Item:MonoBehaviour, IThrowable
 {
-    private Rigidbody _rigidbody;
 
+    private Rigidbody _rigidbody;
+    
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();

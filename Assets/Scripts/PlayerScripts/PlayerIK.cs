@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -7,37 +8,33 @@ namespace PlayerScripts
 {
     public class PlayerIK
     {
-        private const string _armRigName="ArmRig";
+        private Transform _headTarget;
+        private Transform _rArmTarget;
+        
+        private Rig _rArmRig;
+        private Rig _HeadRig;
 
-        private RigBuilder _rigBuilder;
-        private Transform _armTarget;
-        private RigLayer _armRig;
 
-
-        public PlayerIK(RigBuilder rigBuilder, Transform armTarget)
+        public PlayerIK(Rig rArmRig)
         {
-            _rigBuilder = rigBuilder;
-            _armTarget = armTarget;
-            FindArmRig();
+            _rArmRig = rArmRig;
+
+            _rArmTarget = _rArmRig.GetComponentInChildren<TwoBoneIKConstraint>().data.target;
         }
 
         public void SetActiveArmRig()
         {
-            _armRig.active = true;
+            _rArmRig.weight = 1;
         }
 
         public void SetUnActiveArmRig()
         {
-            _armRig.active = false;
+            _rArmRig.weight = 0;
         }
         public void OnTakingIKAnimation(Vector3 targetPosition)
         {
-            _armTarget.position = targetPosition;
+            _rArmTarget.position = targetPosition;
         }
-
-        private void FindArmRig()
-        {
-            _armRig= _rigBuilder.layers.First(r => r.name == _armRigName);
-        }
+        
     }
 }

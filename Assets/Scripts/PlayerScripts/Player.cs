@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 
@@ -24,11 +25,10 @@ namespace PlayerScripts
         [SerializeField] private float _takeDistance;
 
         [Header("IK")]
-        [SerializeField] private Transform _armTarget;
+        [SerializeField] private Rig _rArmRig;
 
         private Animator _animator;
         private CharacterController _characterController;
-        private RigBuilder _rigBuilder;
 
         private PlayerInput _playerInput;
         private PlayerAnimation _playerAnimation;
@@ -43,9 +43,9 @@ namespace PlayerScripts
         private void Awake()
         {
             Cursor.lockState = CursorLockMode.Locked;
+            
             _animator = GetComponent<Animator>();
             _characterController = GetComponent<CharacterController>();
-            _rigBuilder = GetComponent<RigBuilder>();
 
             MoveValueSetup moveValueSetup = new MoveValueSetup(_walkSpeed, _runSpeed, _jumpHeight);
         
@@ -53,12 +53,12 @@ namespace PlayerScripts
             _playerMovement = new PlayerMovement(_characterController,_playerInput,moveValueSetup,_camTransform,_groundMask);
             _playerAnimation = new PlayerAnimation(_animator);
             _takeThrower = new TakeThrower(_placeHolder, _camTransform, _itemMask, _playerInput,_throwForce,_takeDistance);
-            _playerIK = new PlayerIK(_rigBuilder, _armTarget);
+            _playerIK = new PlayerIK(_rArmRig);
             
             
             _playerMovement.Grounded += _playerAnimation.SetLandedTrigger;
-            _takeThrower.Take += OnTaking;
-            _takeThrower.Throw += OnThrowing;
+            _takeThrower.TakeItem += OnTaking;
+            _takeThrower.ThrowItem += OnThrowing;
         }
     
         private void OnEnable()
@@ -103,9 +103,11 @@ namespace PlayerScripts
         {
             _playerAnimation.PlayThrowing();
         }
-        
 
-        // Animation Methods
+
+
+        #region Animation Methods
+
         private void ToMakeStepsInWalkRunAnimation()
         {
             MakeStep?.Invoke();
@@ -123,8 +125,9 @@ namespace PlayerScripts
 
         private void InTakeAnimation()
         {
-            _playerIK.SetUnActiveArmRig();
             _takeThrower.FinallyTake();
+            StartCoroutine(BagFix());
+            SetInteractableTrue();
         }
 
         private void InThrowAnimation()
@@ -136,5 +139,13 @@ namespace PlayerScripts
         {
             _playerAnimation.BackFromThrowing();
         }
+
+        #endregion
+
+        private IEnumerator BagFix()
+        {
+            yield return new WaitForEndOfFrame();
+            _playerIK.SetUnActiveArmRig();
+        } 
     }
 }

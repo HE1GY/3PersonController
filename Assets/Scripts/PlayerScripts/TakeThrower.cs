@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using ShitPalka;
 using UnityEngine;
 
 namespace PlayerScripts
@@ -6,73 +8,72 @@ namespace PlayerScripts
     public class TakeThrower
     {
         public event Action<bool> CanTake;
-        public event Action<Vector3> Take;
-        public event Action Throw;
+        public event Action<Vector3> TakeItem;
+        public event Action ThrowItem;
         
         private readonly Transform _placeHolder;
         private readonly Transform _camTransform;
         private readonly LayerMask _mask;
-        private readonly PlayerInput _input;
         private readonly float _throwForce;
         private readonly float _takeDistance;
 
-        private Item _item;
+        private IThrowable _IThrowableItem;
 
         public TakeThrower(Transform placeHolder,Transform camTransform,LayerMask mask,PlayerInput input,float throwForce,float takeDistance)
         {
             _placeHolder = placeHolder;
             _camTransform = camTransform;
             _mask = mask;
-            _input = input;
+            PlayerInput input1 = input;
             _throwForce = throwForce;
             _takeDistance = takeDistance;
 
-            _input.Player.TakeItem.performed += _ =>
+
+            input1.Player.TakeItem.performed += _ =>
             {
                 TakingItem();
             };
 
-            _input.Player.ThrowItem.performed += _ =>
+            input1.Player.ThrowItem.performed += _ =>
             {
-                if (_item != null)
+                if (_IThrowableItem != null)
                 {
-                    Throw?.Invoke();
+                    ThrowItem?.Invoke();
                 }
             };
 
-            _input.Player.CameraRotation.performed += _ =>
+            input1.Player.CameraRotation.performed += _ =>
             {
-                bool canTake = TryTake(out Item item);                
+                bool canTake = TryTake(out Item item);
                 CanTake?.Invoke(canTake);
             };
 
         }
 
+        #region Animation Methods
+
         public void FinallyTake()
         {
-            _item.TakeMe(_placeHolder);
+            _IThrowableItem.TakeMe(_placeHolder);
         }
 
         public void FinallyThrow()
         {
-            _item.ThrowMe(_throwForce,_camTransform.forward);
-            _item = null;
+            _IThrowableItem.ThrowMe(_throwForce,_camTransform.forward);
+            _IThrowableItem = null;
         }
+        #endregion
         
 
         private bool TryTake(out Item item)
         {
-            Ray ray;
-            Vector3 rayOrigin=_camTransform.position;
-            Vector3 rayDirection = _camTransform.forward;
-            ray=new Ray(rayOrigin,rayDirection);
-            
-            if (Physics.Raycast(ray,out RaycastHit hit,100,_mask))
+            Ray ray = new Ray(_camTransform.position, _camTransform.forward);
+            if (Physics.Raycast(ray,out RaycastHit raycastHit,100,_mask))
             {
-                float distanceToItem = Vector3.Distance(_placeHolder.position, hit.point);
+                float distanceToItem = Vector3.Distance(_placeHolder.position, raycastHit.point);
                 if (distanceToItem <= _takeDistance)
                 {
-                    if (hit.collider.gameObject.TryGetComponent<Item>(out Item item1))
+                    if (raycastHit.collider.gameObject.TryGetComponent<Item>(out Item item1))
                     {
                         item = item1;
                         return true;
@@ -87,10 +88,10 @@ namespace PlayerScripts
         {
             if (TryTake(out Item item))
             {
-                if (_item == null)
+                if (_IThrowableItem == null)
                 {
-                    _item = item;
-                    Take?.Invoke(item.transform.position);
+                    _IThrowableItem = item;
+                    TakeItem?.Invoke(item.transform.position);
                 }
             }
         }

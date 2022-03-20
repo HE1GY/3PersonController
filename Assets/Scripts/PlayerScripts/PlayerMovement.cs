@@ -13,6 +13,7 @@ namespace PlayerScripts
 
         private const float Acceleration = 0.05f;
         private const float Deceleration = 0.05f;
+        private const float AirDeceleration = 0.02f;
         private const float TurnSpeed = 5;
         private const float Gravity = -9.8f;
         private const float SphereGroundCheckRadius = 0.2f;
@@ -38,6 +39,7 @@ namespace PlayerScripts
         private bool _isRunPress;
         private bool _isWalkPress;
         private bool _isGrounded;
+        private bool _isMovable;
 
 
         public PlayerMovement(CharacterController characterController, PlayerInput input, MoveValueSetup moveValueSetup,
@@ -63,15 +65,21 @@ namespace PlayerScripts
 
         public void HandleHorizontalMove(bool isMovable)
         {
+            _isMovable = isMovable;
             _moveDirection = GetMoveDirection();
             if (isMovable && _isWalkPress && _currentSpeed <= _walkSpeed)
             {
                 _currentSpeed += Acceleration;
                 _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, true);
             }
-            else if (!_isWalkPress || !isMovable)
+            else if (!_isWalkPress)
             {
                 _currentSpeed -= Deceleration;
+                _currentSpeed = RoundValue(_currentSpeed, 0, false);
+            }
+            else if (!isMovable)
+            {
+                _currentSpeed -= AirDeceleration;
                 _currentSpeed = RoundValue(_currentSpeed, 0, false);
             }
 
@@ -80,9 +88,14 @@ namespace PlayerScripts
                 _currentSpeed += Acceleration;
                 _currentSpeed = RoundValue(_currentSpeed, _runSpeed, true);
             }
-            else if (!_isRunPress && _currentSpeed > _walkSpeed || !isMovable && _currentSpeed > _walkSpeed)
+            else if (!_isRunPress && _currentSpeed > _walkSpeed)
             {
                 _currentSpeed -= Deceleration;
+                _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
+            }
+            else if (!isMovable&&_currentSpeed > _walkSpeed)
+            {
+                _currentSpeed -= AirDeceleration;
                 _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
             }
 
@@ -117,7 +130,7 @@ namespace PlayerScripts
 
         private void Jump()
         {
-            if (_isGrounded)
+            if (_isGrounded&& _isMovable)
             {
                 float jumpVelocity = Mathf.Sqrt(_jumpHeight * -2 * Gravity);
                 _verticalVelocity = jumpVelocity;

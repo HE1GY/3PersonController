@@ -7,11 +7,12 @@ namespace ShitPalka
 {
     public class Leg
     {
+        private const string LayerNames = "Ground";
+        
         private  float _distanceToMove;
 
         private Transform _ikTargetTransform;
         private Vector3 _currentPos;
-        private Transform _rayOrg;
 
         private RayThrower _rayThrower;
         private LegAnimation _legAnimation;
@@ -22,15 +23,14 @@ namespace ShitPalka
         private Vector3 _startPos;
 
 
-        public Leg(Transform ikTargetTransform,  Transform rayOrg,Animator animator)
+        public Leg(Transform ikTargetTransform,  Transform rayOrg,Animator animator,float distanceToMove)
         {
             _ikTargetTransform = ikTargetTransform;
-            _rayOrg = rayOrg; 
-            _rayThrower = new RayThrower(_rayOrg);
-            _currentPos=_rayThrower.GetHitPos();
+            _rayThrower = new RayThrower(rayOrg,Vector3.down,LayerMask.GetMask(LayerNames));
+            _currentPos = _rayThrower.GetRayHitPosition();
             _legAnimation = new LegAnimation(animator);
 
-            _distanceToMove = Random.Range(0.5f, 0.9f);
+            _distanceToMove = distanceToMove;
         }
 
         public void HandleMovement()
@@ -62,8 +62,9 @@ namespace ShitPalka
 
         private bool CheckIfMoveToPos(out Vector3 nextPos)
         {
-            nextPos = _rayThrower.GetHitPos();
+            nextPos = _rayThrower.GetRayHitPosition();
             return Vector3.Distance(_ikTargetTransform.position, nextPos) > _distanceToMove;
         }
+        
     }
 }

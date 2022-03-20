@@ -1,30 +1,45 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace ShitPalka
-{
-    public  class RayThrower
-    {
-        private Transform _rayOrg;
-        private Vector3 _rayDir = Vector3.down;
 
-        public RayThrower(Transform rayOrg)
+public  class RayThrower
+    {
+        private const int MaxDistance = 100;
+        private Transform _rayOrg;
+        private Vector3 _rayDir;
+        private LayerMask _layerMask;
+        
+        public RayThrower(Transform rayOrg,  Vector3 rayDir,LayerMask layerMask)
         {
             _rayOrg = rayOrg;
+            _rayDir = rayDir;
+            _layerMask = layerMask;
         }
 
-        public Vector3 GetHitPos()
+        public bool TryGetHitInfo(out RaycastHit raycastHit)
         {
             Ray ray;
             ray = new Ray(_rayOrg.position, _rayDir);
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, 100, LayerMask.GetMask("Ground")))
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, MaxDistance, _layerMask))
             {
-                return hitInfo.point;
+                raycastHit= hitInfo;
+                return true;
             }
-            
-            Debug.LogError("Leg RayCast Not hit ground");
-            throw new Exception("Leg RayCast Not hit ground");
+            raycastHit =new RaycastHit();
+            return false;
         }
+        
+        public Vector3 GetRayHitPosition()
+        {
+            if (TryGetHitInfo(out RaycastHit raycastHit))
+            {
+                return raycastHit.point;
+            }
+            throw new Exception($"Ray does not hit mask{_layerMask}");
+        }
+        
     
     }
-}
+
+
