@@ -1,15 +1,15 @@
-using UnityEngine;
-using UnityEngine.UI;
 using PlayerScripts;
 using ShitPalka;
+using UnityEngine;
+using UnityEngine.UI;
 
-namespace Stats
+namespace UI
 {
     public class Stats : MonoBehaviour
     {
         [SerializeField] private Player _player;
         [SerializeField] private Palka _palka;
-    
+
         [SerializeField] private Text _stepsCountText;
         [SerializeField] private Text _speedText;
         [SerializeField] private Text _hitsText;
@@ -33,7 +33,7 @@ namespace Stats
 
         private void Update()
         {
-            _speed= _player.GetSpeed();
+            _speed = _player.GetSpeed();
             DisplayStats();
         }
 
@@ -54,7 +54,5 @@ namespace Stats
             _speedText.text = _speed.ToString();
             _hitsText.text = _hitsPalka.ToString();
         }
-        
-        
     }
 }

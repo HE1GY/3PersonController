@@ -4,7 +4,7 @@ namespace ShitPalka
 {
     public class LegAnimation
     {
-        private Animator _animator;
+        private readonly Animator _animator;
         private static readonly int _moveHash = Animator.StringToHash("Move");
 
         public LegAnimation(Animator animator)
@@ -15,11 +15,6 @@ namespace ShitPalka
         public void PlayLegMove()
         {
             _animator.SetTrigger(_moveHash);
-        }
-
-        public void TurnAnimator(bool on)
-        {
-            _animator.enabled = on;
         }
     }
 }

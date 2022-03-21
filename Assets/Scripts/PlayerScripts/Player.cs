@@ -9,23 +9,21 @@ namespace PlayerScripts
     {
         public event Action MakeStep;
 
-        [Header("MoveSetup")]
-        [SerializeField] private float _walkSpeed;
+        [Header("MoveSetup")] [SerializeField] private float _walkSpeed;
         [SerializeField] private float _runSpeed;
         [SerializeField] private float _jumpHeight;
         [SerializeField] private Transform _camTransform;
-    
-        [Header("Gravity")]
-        [SerializeField] private LayerMask _groundMask;
 
-        [Header("Take&Throw")] 
-        [SerializeField] private Transform _placeHolder;
+        [Header("Gravity")] [SerializeField] private LayerMask _groundMask;
+
+        [Header("Take&Throw")] [SerializeField]
+        private Transform _placeHolder;
+
         [SerializeField] private LayerMask _itemMask;
         [SerializeField] private float _throwForce;
         [SerializeField] private float _takeDistance;
 
-        [Header("IK")]
-        [SerializeField] private Rig _rArmRig;
+        [Header("IK")] [SerializeField] private Rig _rArmRig;
 
         private Animator _animator;
         private CharacterController _characterController;
@@ -36,31 +34,32 @@ namespace PlayerScripts
         private TakeThrower _takeThrower;
         private PlayerIK _playerIK;
 
-        private bool _isInterctable=true;
-        
+        private bool _isInteractable = true;
 
 
         private void Awake()
         {
             Cursor.lockState = CursorLockMode.Locked;
-            
+
             _animator = GetComponent<Animator>();
             _characterController = GetComponent<CharacterController>();
 
             MoveValueSetup moveValueSetup = new MoveValueSetup(_walkSpeed, _runSpeed, _jumpHeight);
-        
+
             _playerInput = new PlayerInput();
-            _playerMovement = new PlayerMovement(_characterController,_playerInput,moveValueSetup,_camTransform,_groundMask);
+            _playerMovement = new PlayerMovement(_characterController, _playerInput, moveValueSetup, _camTransform,
+                _groundMask);
             _playerAnimation = new PlayerAnimation(_animator);
-            _takeThrower = new TakeThrower(_placeHolder, _camTransform, _itemMask, _playerInput,_throwForce,_takeDistance);
+            _takeThrower = new TakeThrower(_placeHolder, _camTransform, _itemMask, _playerInput, _throwForce,
+                _takeDistance);
             _playerIK = new PlayerIK(_rArmRig);
-            
-            
+
+
             _playerMovement.Grounded += _playerAnimation.SetLandedTrigger;
             _takeThrower.TakeItem += OnTaking;
             _takeThrower.ThrowItem += OnThrowing;
         }
-    
+
         private void OnEnable()
         {
             _playerInput.Enable();
@@ -73,7 +72,7 @@ namespace PlayerScripts
 
         private void Update()
         {
-            _playerMovement.HandleHorizontalMove(_isInterctable);
+            _playerMovement.HandleHorizontalMove(_isInteractable);
             _playerMovement.HandleRotation();
             _playerMovement.HandleVerticalMove();
             _playerAnimation.SetHorizontalVelocity(_playerMovement.GetNormalizedHorizontalVelocity());
@@ -96,14 +95,13 @@ namespace PlayerScripts
         {
             _playerAnimation.PlayTaking();
             _playerIK.SetActiveArmRig();
-            _playerIK.OnTakingIKAnimation(targetPos);
+            _playerIK.SetIKArmTarget(targetPos);
         }
 
         private void OnThrowing()
         {
             _playerAnimation.PlayThrowing();
         }
-
 
 
         #region Animation Methods
@@ -115,12 +113,12 @@ namespace PlayerScripts
 
         private void SetInteractableFalse()
         {
-            _isInterctable = false;
+            _isInteractable = false;
         }
 
         private void SetInteractableTrue()
         {
-            _isInterctable = true;
+            _isInteractable = true;
         }
 
         private void InTakeAnimation()
@@ -137,7 +135,7 @@ namespace PlayerScripts
 
         private void InTheEndThrowAnimation()
         {
-            _playerAnimation.BackFromThrowing();
+            _playerAnimation.BackFromThrowingLayer();
         }
 
         #endregion
@@ -146,6 +144,6 @@ namespace PlayerScripts
         {
             yield return new WaitForEndOfFrame();
             _playerIK.SetUnActiveArmRig();
-        } 
+        }
     }
 }

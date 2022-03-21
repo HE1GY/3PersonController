@@ -1,4 +1,3 @@
-using System;
 using PlayerScripts;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +9,7 @@ namespace UI
         [SerializeField] private Player _player;
         [SerializeField] private Color _idle;
         [SerializeField] private Color _takable;
-    
+
         private Image _image;
 
         private void Awake()
@@ -39,6 +38,5 @@ namespace UI
                 _image.color = _idle;
             }
         }
-        
     }
 }

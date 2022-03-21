@@ -20,7 +20,6 @@ namespace PlayerScripts
         private const int GroundedGravity = -4;
 
         private readonly CharacterController _characterController;
-        private readonly PlayerInput _input;
         private readonly Transform _camTransform;
         private readonly LayerMask _groundLayerMask;
 
@@ -46,20 +45,19 @@ namespace PlayerScripts
             Transform camTransform, LayerMask groundLayerMask)
         {
             _characterController = characterController;
-            _input = input;
             _walkSpeed = moveValueSetup.WalkSpeed;
             _runSpeed = moveValueSetup.RunSpeed;
             _jumpHeight = moveValueSetup.JumpHeight;
             _camTransform = camTransform;
             _groundLayerMask = groundLayerMask;
 
-            _input.Player.Walk.performed += OnInputDirection;
-            _input.Player.Walk.canceled += _ => _isWalkPress = false;
+            input.Player.Walk.performed += OnInputDirection;
+            input.Player.Walk.canceled += _ => _isWalkPress = false;
 
-            _input.Player.Run.started += OnInputRun;
-            _input.Player.Run.canceled += OnInputRun;
+            input.Player.Run.started += OnInputRun;
+            input.Player.Run.canceled += OnInputRun;
 
-            _input.Player.Jump.performed += ctx => Jump();
+            input.Player.Jump.performed += ctx => Jump();
         }
 
 
@@ -93,7 +91,7 @@ namespace PlayerScripts
                 _currentSpeed -= Deceleration;
                 _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
             }
-            else if (!isMovable&&_currentSpeed > _walkSpeed)
+            else if (!isMovable && _currentSpeed > _walkSpeed)
             {
                 _currentSpeed -= AirDeceleration;
                 _currentSpeed = RoundValue(_currentSpeed, _walkSpeed, false);
@@ -106,8 +104,8 @@ namespace PlayerScripts
         {
             if (_isWalkPress)
             {
-                Vector3 targetDiraction = GetMoveDirection();
-                Quaternion targetRotation = Quaternion.LookRotation(targetDiraction);
+                Vector3 targetDirection = GetMoveDirection();
+                Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
                 Quaternion newRotation = Quaternion.Slerp(_characterController.transform.rotation, targetRotation,
                     TurnSpeed * Time.deltaTime);
                 _characterController.transform.rotation = newRotation;
@@ -116,7 +114,7 @@ namespace PlayerScripts
 
         public void HandleVerticalMove()
         {
-            var position = _characterController.transform.position;
+            Vector3 position = _characterController.transform.position;
             bool isGrounded = Physics.CheckSphere(position, SphereGroundCheckRadius, _groundLayerMask);
             HandleGravity(isGrounded);
             _characterController.Move(Vector3.up * _verticalVelocity * Time.deltaTime);
@@ -126,11 +124,11 @@ namespace PlayerScripts
         public float GetVerticalVelocity() => _verticalVelocity;
 
         public float GetVelocity() => _currentSpeed;
-        
+
 
         private void Jump()
         {
-            if (_isGrounded&& _isMovable)
+            if (_isGrounded && _isMovable)
             {
                 float jumpVelocity = Mathf.Sqrt(_jumpHeight * -2 * Gravity);
                 _verticalVelocity = jumpVelocity;

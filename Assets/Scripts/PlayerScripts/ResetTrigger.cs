@@ -1,13 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ResetTrigger : StateMachineBehaviour
+namespace PlayerScripts
 {
-    private  readonly int _landedHash = Animator.StringToHash("landed");
-
-    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    public class ResetTrigger : StateMachineBehaviour
     {
-        animator.ResetTrigger(_landedHash);
+        private readonly int _landedTriggerHash = Animator.StringToHash("landed");
+
+        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            animator.ResetTrigger(_landedTriggerHash);
+        }
     }
 }

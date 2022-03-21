@@ -1,13 +1,16 @@
-﻿public struct MoveValueSetup
+﻿namespace PlayerScripts
 {
-    public float WalkSpeed;
-    public float RunSpeed;
-    public float JumpHeight;
-
-    public MoveValueSetup(float walkSpeed, float runSpeed, float jumpHeight)
+    public struct MoveValueSetup
     {
-        WalkSpeed = walkSpeed;
-        RunSpeed = runSpeed;
-        JumpHeight = jumpHeight;
+        public readonly float WalkSpeed;
+        public readonly float RunSpeed;
+        public readonly float JumpHeight;
+
+        public MoveValueSetup(float walkSpeed, float runSpeed, float jumpHeight)
+        {
+            WalkSpeed = walkSpeed;
+            RunSpeed = runSpeed;
+            JumpHeight = jumpHeight;
+        }
     }
 }
